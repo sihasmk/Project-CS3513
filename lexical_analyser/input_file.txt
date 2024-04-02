@@ -1,0 +1,5 @@
+x = 10;
+// skibidi bumble lmao
+fn let brother where penisf
+yel1ow = "helo, let in fn where my \t name is b Ihave + and -but there is[)";
+z = x + y;

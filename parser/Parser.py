@@ -1,0 +1,374 @@
+from ..lexical_analyser.Token import Token
+from ..lexical_analyser.TokenType import TokenType
+from NodeType import NodeType
+from Node import Node
+
+
+class Parser:
+    def __init__(self, tokens) -> None:
+        self.tokens = tokens
+        self.AST = []
+        self.stringAST = []
+
+    def parse(self):
+        self.tokens.append(Token(TokenType.ENDOFTOKENS, ""))
+        self.E()
+
+        if (self.tokens[0].type == TokenType.ENDOFTOKENS):
+            return self.AST
+
+        else:
+            print("Parsing unsuccessful...")
+            print("Remaining unparsed tokens:")
+            for token in self.tokens:
+                print(token)
+            return
+
+    def E(self):
+        n = 0
+        token = self.tokens[0]
+
+        if token.type == TokenType.KEYWORD and token.value in ["let", "fn"]:
+            if token.value == "let":
+                self.tokens.pop(0)
+                self.D()
+
+                if (self.tokens[0].value != "in"):
+                    print("Parse error at E : 'in' expected")
+
+                self.tokens.pop(0)
+                self.E()
+                self.AST.append(Node(NodeType.let, "let", 2))
+
+            else:
+                self.tokens.pop(0)
+
+                while True:
+                    self.Vb()
+                    n += 1
+
+                    if ((self.tokens[0].type != TokenType.IDENTIFIER) and (self.tokens[0].value != "(")):
+                        break
+
+                if not self.tokens[0].value == ".":
+                    print("Parse error at E : '.' expected")
+
+                self.tokens.pop(0)
+                self.E()
+                self.AST.append(Node(NodeType.lambda_, "lambda", n+1))
+
+        else:
+            self.Ew()
+
+    def Ew(self):
+        self.T()
+        if (self.tokens[0].value == "where"):
+            self.tokens.pop(0)  # remove the "where"
+            self.Dr()
+            self.AST.append(Node(NodeType.where, "where", 2))
+
+    def T(self):
+        self.Ta()
+        n = 1
+
+        while (self.tokens[0].value == ","):
+            self.tokens.pop(0)  # remove commas
+            self.Ta()
+            n += 1
+
+        if (n > 1):
+            self.AST.append(Node(NodeType.tau, "tau", n))
+
+    def Ta(self):
+        self.Tc()
+        while (self.tokens[0].value == "aug"):
+            self.tokens.pop(0)
+            self.Tc()
+            self.AST.append(Node(NodeType.aug, "aug", 2))
+
+    def Tc(self):
+        self.B()
+        if (self.tokens[0].value == "->"):
+            self.tokens.pop(0)  # Remove the '->'
+            self.Tc()
+
+            if not self.tokens[0].value == "|":
+                print("Parse error at Tc: conditional '|' expected")
+
+            self.tokens.pop(0)
+            self.Tc()
+            self.AST.append(Node(NodeType.conditional, "->", 3))
+
+    def B(self):
+        self.Bt()
+
+        while (self.tokens[0].value == "or"):
+            self.tokens.pop(0)  # Remove the 'or'
+            self.Bt()
+            self.AST.append(Node(NodeType.op_or, "or", 2))
+
+    def Bt(self):
+        self.Bs()
+
+        while (self.tokens[0].value == "&"):
+            self.tokens.pop(0)  # Remove the '&'
+            self.Bs()
+            self.AST.append(Node(NodeType.op_and, "&", 2))
+
+    def Bs(self):
+        if (self.tokens[0].value == "not"):
+            self.tokens.pop(0)
+            self.Bp()
+            self.AST.append(Node(NodeType.op_not, "not", 1))
+
+        else:
+            self.Bp()
+
+    def Bp(self):
+        self.A()
+        token = self.tokens[0]
+
+        if token.value in [">", ">=", "<", "<=", "gr", "ge", "ls", "le", "eq", "ne"]:
+            self.tokens.pop(0)
+            self.A()
+
+            match token.value:
+                case ">":
+                    self.AST.append(Node(NodeType.op_compare, "gr", 2))
+                case ">=":
+                    self.AST.append(Node(NodeType.op_compare, "ge", 2))
+                case "<":
+                    self.AST.append(Node(NodeType.op_compare, "ls", 2))
+                case ">=":
+                    self.AST.append(Node(NodeType.op_compare, "le", 2))
+                case _:
+                    self.AST.append(Node(NodeType.op_compare, token.value, 2))
+
+    def A(self):
+        if self.tokens[0].value == "+":
+            self.tokens.pop(0)
+            self.At()
+
+        elif self.tokens[0].value == "-":
+            self.tokens.pop(0)
+            self.At()
+            self.AST.append(Node(NodeType.op_neg, "neg", 1))
+
+        else:
+            self.At()
+
+        while self.tokens[0].value in ["+", "-"]:
+            currTok = self.tokens[0]
+            self.tokens.pop(0)  # Remove the + or - symbols
+            self.At()
+            if currTok.value == "+":
+                self.AST.append(Node(NodeType.op_plus, "+", 2))
+            else:
+                self.AST.append(Node(NodeType.op_minus, "-", 2))
+
+    def At(self):
+        self.Af()
+        while (self.tokens[0].value in ["*", "/"]):
+            currTok = self.tokens[0]
+            self.tokens.pop(0)  # Remove the multiply or divide operator
+            self.Af()
+
+            if (currTok.value == "*"):
+                self.AST.append(Node(NodeType.op_mul, "*", 2))
+
+            else:
+                self.AST.append(Node(NodeType.op_div, "/", 2))
+
+    def Af(self):
+        self.Ap()
+
+        if (self.tokens[0].value == "**"):
+            self.tokens.pop(0)
+            self.Af()
+            self.AST.append(Node(NodeType.op_pow, "**", 2))
+
+    def Ap(self):
+        self.R()
+
+        while self.tokens[0].value == "@":
+            self.tokens.pop(0)
+
+            if self.tokens[0].type != TokenType.IDENTIFIER:
+                print("Parsing error at Ap: IDENTIFIER expected")
+
+            self.AST.append(Node(NodeType.identifier, self.tokens[0].value, 0))
+            self.tokens.pop(0)  # Remove IDENTIFIER
+
+            self.R()
+            self.AST.append(Node(NodeType.at, "@", 3))
+
+    def R(self):
+        self.Rn()
+
+        while (self.tokens[0].type in [TokenType.IDENTIFIER, TokenType.INTEGER, TokenType.STRING]) or (self.tokens[0].value in ["true", "false", "dummy", "nil", "("]):
+            self.Rn()
+            self.AST.append(Node(NodeType.gamma, "gamma", 2))
+
+    def Rn(self):
+        match self.tokens[0].type:
+            case TokenType.IDENTIFIER:
+                self.AST.append(
+                    Node(NodeType.identifier, self.tokens[0].value, 0))
+                self.tokens.pop(0)
+            case TokenType.INTEGER:
+                self.AST.append(
+                    Node(NodeType.integer, self.tokens[0].value, 0))
+                self.tokens.pop(0)
+            case TokenType.STRING:
+                self.AST.append(Node(NodeType.string, self.tokens[0].value, 0))
+                self.tokens.pop(0)
+            case TokenType.KEYWORD:
+                match self.tokens[0].value:
+                    case "true":
+                        self.AST.append(Node(NodeType.true_value, "true", 0))
+                        self.tokens.pop(0)
+                    case "false":
+                        self.AST.append(Node(NodeType.false_value, "false", 0))
+                        self.tokens.pop(0)
+                    case "nil":
+                        self.AST.append(Node(NodeType.nil, "nil", 0))
+                        self.tokens.pop(0)
+                    case "dummy":
+                        self.AST.append(Node(NodeType.dummy, "dummy", 0))
+                        self.tokens.pop(0)
+                    case _:
+                        print("Parse error at Rn: Unexpected keyword")
+            case TokenType.PUNCTUATION:
+                if self.tokens[0].value == "(":
+                    self.tokens.pop(0)  # Remove the opening bracket
+                    self.E()
+
+                    if (self.tokens[0].value != ")"):
+                        print("Parsing error at Rn : Expected a matching ')'")
+
+                    self.tokens.pop(0)  # Remove closing bracket
+            case _:
+                print("Parsing error at Rn: Expected an Rn, but got something else")
+
+    def D(self):
+        self.Da()
+        if (self.tokens[0].value == "within"):
+            self.tokens.pop(0)  # Remove 'within'
+            self.D()
+            self.AST.append(Node(NodeType.within, "within", 2))
+
+    def Da(self):
+        self.Dr()
+        n = 1
+
+        while self.tokens[0].value == "and":
+            self.tokens.pop(0)  # Remove 'and's
+            self.Dr()
+            n += 1
+
+        if (n > 1):
+            self.AST.append(Node(NodeType.and_, "and", n))
+
+    def Dr(self):
+        isRec = False
+
+        if self.tokens[0].value == "rec":
+            self.tokens.pop(0)  # Remove 'rec' word
+            isRec = True
+
+        self.Db()
+
+        if isRec:
+            self.AST.append(Node(NodeType.rec, "rec", 1))
+
+    def Db(self):
+        if (self.tokens[0].type == TokenType.PUNCTUATION) and (self.tokens[0].value == "("):
+            self.tokens.pop(0)  # Remove the opening bracket
+            self.D()
+
+            if self.tokens[0].value != ")":
+                print("Parsing error at Db: Expected matching ')'")
+
+            self.tokens.pop(0)
+
+        elif self.tokens[0].type == TokenType.IDENTIFIER:
+            # Hoping to get fcn_form
+            if (self.tokens[1].value == "(") or (self.tokens[1].type == TokenType.IDENTIFIER):
+                self.AST.append(
+                    Node(NodeType.identifier, self.tokens[0].value, 0))
+
+                self.tokens.pop(0)  # Remove the ID
+
+                n = 1
+
+                while True:
+                    self.Vb()
+                    n += 1
+
+                    if (self.tokens[0].type != TokenType.IDENTIFIER and self.tokens[0].value != "("):
+                        break
+
+                if (self.tokens[0].value != "="):
+                    print("Parsing error at Db : Expected an '='")
+
+                self.tokens.pop(0)
+                self.E()
+
+                self.AST.append(Node(NodeType.fcn_form, "fcn_form", n+1))
+
+            elif self.tokens[1].value == "=":
+                self.AST.append(
+                    Node(NodeType.identifier, self.tokens[0].value, 0))
+                self.tokens.pop(0)  # Remove ID
+                self.tokens.pop(0)  # Remove '='
+                self.E()
+
+                self.AST.append(Node(NodeType.equal, "=", 2))
+
+            elif self.tokens[1].value == ",":
+                self.Vl()
+                if (self.tokems[0] != "="):
+                    print("Parsing error at Db : Expected an '='")
+
+                self.tokens.pop(0)
+                self.E()
+
+                self.AST.append(Node(NodeType.equal, "=", 2))
+
+    def Vb(self):
+        if self.tokens[0].type == TokenType.IDENTIFIER and self.tokens[0].value == "(":
+            self.tokens.pop(0)  # Remove the opening bracket
+            isVl = False
+
+            if self.tokens[0].type == TokenType.IDENTIFIER:
+                self.Vl()
+                isVl = True
+
+            if self.tokens[0].value != ")":
+                print("Parse error at Vb : Unmatched '('")
+
+            self.tokens.pop(0)
+
+            if not isVl:
+                self.AST.append(
+                    Node(NodeType.identifier, self.tokens[0].value, 0))
+                self.tokens.pop(0)
+
+    def Vl(self):
+        n = 0
+
+        while True:
+            if n > 0:
+                self.tokens.pop(0)
+
+            if (self.tokens[0].type != TokenType.IDENTIFIER):
+                print("Parse error at Vl : an ID was expected")
+
+            self.AST.append(Node(NodeType.identifier, self.tokens[0].value, 0))
+            self.tokens.pop(0)
+            n += 1
+
+            if (self.tokens[0].value != ","):
+                break
+
+        self.AST.append(Node(NodeType.comma, ",", n))
