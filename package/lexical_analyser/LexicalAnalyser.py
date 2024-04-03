@@ -1,7 +1,7 @@
 from pathlib import Path
 import re
-from Token import Token
-from TokenType import TokenType
+from .Token import Token
+from .TokenType import TokenType
 
 
 class LexicalAnalyser:
@@ -11,7 +11,7 @@ class LexicalAnalyser:
 
     def scan(self):
         try:
-            p = Path(__file__).with_name(self.inputFileName)
+            p = Path(__file__).parent.parent / self.inputFileName
             input_file = open(p, 'r')
             count = 0
             while True:
@@ -27,6 +27,8 @@ class LexicalAnalyser:
 
         except IOError:
             print("Could not read file {}".format(self.inputFileName))
+
+        return self.tokens
 
     def tokenizeLine(self, line):
         digit = r"[0-9]"
@@ -44,8 +46,6 @@ class LexicalAnalyser:
         commentPattern = re.compile(r"//.*")
         spacesPattern = re.compile(r"[ \t\n]+")
         punctuationPattern = re.compile(punction)
-
-        print(stringPattern)
 
         currentIndex = 0
 
@@ -112,11 +112,3 @@ class LexicalAnalyser:
             print("Unable to tokenize the character: {} at index: {}".format(
                 currentChar, currentIndex))
             break
-
-
-brev = LexicalAnalyser("input_file.txt")
-
-brev.scan()
-
-for token in brev.tokens:
-    print(token)

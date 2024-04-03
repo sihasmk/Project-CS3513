@@ -40,8 +40,3 @@ class NodeType(Enum):
     # env_operator = auto()
     # tuple = auto()
     # eta_expression = auto()
-
-
-# Example usage
-node_type = NodeType.let
-print(node_type)

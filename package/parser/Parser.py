@@ -1,7 +1,7 @@
 from ..lexical_analyser.Token import Token
 from ..lexical_analyser.TokenType import TokenType
-from NodeType import NodeType
-from Node import Node
+from .NodeType import NodeType
+from .Node import Node
 
 
 class Parser:
@@ -9,6 +9,55 @@ class Parser:
         self.tokens = tokens
         self.AST = []
         self.stringAST = []
+
+    def AstToString(self):
+        dots = ""
+        stack = []
+
+        while self.AST:
+            if not stack:
+                if self.AST[-1].children == 0:
+                    self.addStrings(dots, self.AST.pop())
+
+                else:
+                    node = self.AST.pop()
+                    stack.append(node)
+
+            else:
+                if self.AST[-1].children > 0:
+                    node = self.AST.pop()
+                    stack.append(node)
+                    dots += "."
+
+                else:
+                    stack.append(self.AST.pop())
+                    dots += "."
+
+                    while (stack[-1].children == 0):
+                        self.addStrings(dots, stack.pop())
+
+                        if not stack:
+                            break
+
+                        dots = dots[:-1]
+                        node = stack.pop()
+                        node.children -= 1
+                        stack.append(node)
+
+    def addStrings(self, dots, node):
+        match node.type:
+            case NodeType.identifier:
+                self.stringAST.append(dots+"<ID:"+node.value+">")
+            case NodeType.integer:
+                self.stringAST.append(dots+"<INT:"+node.value+">")
+            case NodeType.string:
+                self.stringAST.append(dots+"<STR:"+node.value+">")
+            case NodeType.true_value, NodeType.false_value, NodeType.nil, NodeType.dummy:
+                self.stringAST.append(dots+"<"+node.value+">")
+            case NodeType.fcn_form:
+                self.stringAST.append(dots+"function_form")
+            case _:
+                self.stringAST.append(dots+node.value)
 
     def parse(self):
         self.tokens.append(Token(TokenType.ENDOFTOKENS, ""))
@@ -22,7 +71,7 @@ class Parser:
             print("Remaining unparsed tokens:")
             for token in self.tokens:
                 print(token)
-            return
+            return None
 
     def E(self):
         n = 0
