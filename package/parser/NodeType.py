@@ -40,3 +40,6 @@ class NodeType(Enum):
     # env_operator = auto()
     # tuple = auto()
     # eta_expression = auto()
+
+    def __str__(self) -> str:
+        return super().__str__()

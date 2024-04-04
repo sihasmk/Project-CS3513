@@ -6,5 +6,7 @@ tokens = scanner.scan()
 parser = Parser(tokens)
 AST = parser.parse()
 
-for node in AST:
-    print(node)
+stringAST = parser.AstToString()
+
+for string in stringAST:
+    print(string)

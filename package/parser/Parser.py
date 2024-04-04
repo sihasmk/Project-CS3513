@@ -44,6 +44,9 @@ class Parser:
                         node.children -= 1
                         stack.append(node)
 
+        self.stringAST.reverse()
+        return self.stringAST
+
     def addStrings(self, dots, node):
         match node.type:
             case NodeType.identifier:
@@ -385,7 +388,7 @@ class Parser:
                 self.AST.append(Node(NodeType.equal, "=", 2))
 
     def Vb(self):
-        if self.tokens[0].type == TokenType.IDENTIFIER and self.tokens[0].value == "(":
+        if self.tokens[0].type == TokenType.PUNCTUATION and self.tokens[0].value == "(":
             self.tokens.pop(0)  # Remove the opening bracket
             isVl = False
 
@@ -420,4 +423,5 @@ class Parser:
             if (self.tokens[0].value != ","):
                 break
 
-        self.AST.append(Node(NodeType.comma, ",", n))
+        if n > 1:
+            self.AST.append(Node(NodeType.comma, ",", n))

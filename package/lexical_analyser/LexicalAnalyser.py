@@ -28,7 +28,10 @@ class LexicalAnalyser:
         except IOError:
             print("Could not read file {}".format(self.inputFileName))
 
-        return self.tokens
+        filtered_tokens = [
+            token for token in self.tokens if token.type != TokenType.DELETE]
+
+        return filtered_tokens
 
     def tokenizeLine(self, line):
         digit = r"[0-9]"

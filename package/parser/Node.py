@@ -7,4 +7,4 @@ class Node:
 # We consider the root node to have a depth of 0
 
     def __str__(self) -> str:
-        return "<" + self.type + ", " + self.value + ", " + self.children + ">"
+        return "<" + str(self.type) + ", " + str(self.value) + ", " + str(self.children) + ">"
