@@ -406,6 +406,10 @@ class Parser:
                     Node(NodeType.identifier, self.tokens[0].value, 0))
                 self.tokens.pop(0)
 
+        elif self.tokens[0].type == TokenType.IDENTIFIER:
+            self.AST.append(Node(NodeType.identifier, self.tokens[0].value, 0))
+            self.tokens.pop(0)
+
     def Vl(self):
         n = 0
 
