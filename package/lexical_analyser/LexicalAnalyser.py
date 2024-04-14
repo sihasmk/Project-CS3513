@@ -43,9 +43,8 @@ class LexicalAnalyser:
             letter+r"("+letter+r"|"+digit+r"|"+r"_)*")
         integerPattern = re.compile(digit+r"+")
         operatorPattern = re.compile(operatorSymbol+r"+")
-
         stringPattern = re.compile(
-            r'''"(\t|\n|\\|\"|'''+punction+'''| |'''+letter+'''|'''+digit+'''|'''+operatorSymbol+''')*"''')
+            r"'(\t|\n|\\|\"|"+punction+"| |"+letter+"|"+digit+"|"+operatorSymbol+")*'")
         commentPattern = re.compile(r"//.*")
         spacesPattern = re.compile(r"[ \t\n]+")
         punctuationPattern = re.compile(punction)
