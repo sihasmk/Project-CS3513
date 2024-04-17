@@ -10,6 +10,8 @@ class Parser:
         self.AST = []
         self.stringAST = []
 
+    # Function with the logic to convert AST to a list of strings to show their depth
+    # Depth is found here and the addString function uses the dots given from here to add to stringAST
     def AstToString(self):
         dots = ""
         stack = []
@@ -47,6 +49,7 @@ class Parser:
         self.stringAST.reverse()
         return self.stringAST
 
+    # Function to prepend the dots to a node, and add it to stringAST list
     def addStrings(self, dots, node):
         match node.type:
             case NodeType.identifier:

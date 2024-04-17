@@ -1,4 +1,19 @@
-from NodeFactory import NodeFactory
+class NodeFactory:
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    def getNode(*args):
+        node = Node()
+        node.data = args[0]
+        node.depth = args[1]
+
+        if len(args) > 2:
+            node.parent = args[2]
+            node.children = args[3]
+            node.isStandardized = args[4]
+
+        return node
 
 
 class Node:
@@ -178,6 +193,30 @@ class Node:
                     self.data = "="
 
                 case "rec":
-                    pass
+                    X = self.children[0].children[0]
+                    E = self.children[0].children[1]
+
+                    gamma = NodeFactory.getNode(
+                        "gamma", self.depth + 1, self, [], True)
+                    Ystar = NodeFactory.getNode(
+                        "<Y*>", self.depth + 2, gamma, [], True)
+                    lambda_node = NodeFactory.getNode(
+                        "lambda", self.depth + 2, gamma, [], True)
+                    X2 = NodeFactory.getNode(
+                        X.data, self.depth + 3, lambda_node, X.children, True)
+
+                    X.depth -= 1
+                    X.parent = self
+
+                    E.depth += 1
+                    E.parent = lambda_node
+
+                    lambda_node.children.extend([X2, E])
+                    gamma.children.extend([Ystar, lambda_node])
+
+                    self.children.clear()
+                    self.children.extend([X, gamma])
+
+                    self.data = "="
 
         self.isStandardized = True
