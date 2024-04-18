@@ -18,5 +18,7 @@ stringAST = parser.AstToString()
 
 AST = ASTFactory.getAST(stringAST)
 
+AST.standardize()
+
 for string in stringAST:
     print(string)

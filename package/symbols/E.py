@@ -11,6 +11,7 @@ class E(Symbol):
         self.isRemoved = False
         self.values = {}
 
+    # Function to find the value of something in the env or parent envs
     def lookup(self, id) -> Symbol:
         for key in self.values.keys:
             if key.data == id.data:
