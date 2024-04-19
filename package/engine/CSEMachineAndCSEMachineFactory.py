@@ -241,7 +241,7 @@ class CSEMachine:
                             else:
                                 print(self.getStringTuple(thingToBePrinted))
 
-                            self.stack.insert(0, thingToBePrinted)
+                            self.stack.insert(0, Dummy())
 
                         case "Stem":
                             stringToBeStemmed = self.stack.pop(0)
