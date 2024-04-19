@@ -11,10 +11,8 @@ from package.symbols.Gamma import Gamma
 from package.symbols.Id import Id
 from package.symbols.Int import Int
 from package.symbols.Lambda import Lambda
-from package.symbols.Rand import Rand
 from package.symbols.Rator import Rator
 from package.symbols.Str import Str
-from package.symbols.Symbol import Symbol
 from package.symbols.Tau import Tau
 from package.symbols.Tup import Tup
 from package.symbols.UOp import UOp
@@ -29,10 +27,10 @@ class CSEMachineFactory:
 
     def getSymbol(self, node):
         match node.data:
-            case "neg":
+            case "not" | "neg":
                 return UOp(node.data)
 
-            case "aug":
+            case "+" | "-" | "*" | "/" | "**" | "&" | "or" | "eq" | "ne" | "ls" | "le" | "gr" | "ge" | "aug":
                 return BOp(node.data)
 
             case "gamma":
@@ -42,25 +40,25 @@ class CSEMachineFactory:
                 return Tau(len(node.children))
 
             case "<Y*>":
-                return YStar
+                return YStar()
 
             case _:
-                if node.data.startsWith("<ID:"):
+                if node.data.startswith("<ID:"):
                     return Id(node.data[4:len(node.data)-1])
-                elif node.data.startsWith("<INT:"):
+                elif node.data.startswith("<INT:"):
                     return Int(node.data[5:len(node.data)-1])
-                elif node.data.startsWith("<STR:"):
+                elif node.data.startswith("<STR:"):
                     return Str(node.data[6:len(node.data)-2])
-                elif node.data.startsWith("<nil>"):
+                elif node.data.startswith("<nil>"):
                     return Tup()
-                elif node.data.startsWith("<true>"):
-                    return Bool("true")
-                elif node.data.startsWith("<false>"):
-                    return Bool("false")
-                elif node.data.startsWith("<dummy>"):
+                elif node.data.startswith("<true>"):
+                    return Bool("True")
+                elif node.data.startswith("<false>"):
+                    return Bool("False")
+                elif node.data.startswith("<dummy>"):
                     return Dummy()
                 else:
-                    return Err(f"No symbol found for give node: {node.data}")
+                    return Err(f"No symbol found for given node: {node.data}")
 
     def getB(self, node):
         b = B()
@@ -146,7 +144,7 @@ class CSEMachine:
             # CSE Rule 1
             if isinstance(currentSymbol, Id):
                 Ob = currEnv.lookup(currentSymbol)
-                self.stack.append(Ob)
+                self.stack.insert(0, Ob)
 
             # CSE Rule 2
             elif isinstance(currentSymbol, Lambda):
@@ -218,7 +216,92 @@ class CSEMachine:
 
                 # Built-in functions
                 else:
-                    pass
+                    builtInFunction = stackTop.data
+
+                    match builtInFunction:
+                        case "Print":
+                            thingToBePrinted = self.stack.pop(0)
+                            print(thingToBePrinted.data)
+
+                        case "Stem":
+                            stringToBeStemmed = self.stack.pop(0)
+                            # Not sure what 'Stem' does. Need to implement.
+
+                        case "Stern":
+                            stringToBeSterned: Str = self.stack.pop(0)
+
+                            stringToBeSterned.data = stringToBeSterned.data[1:]
+                            self.stack.insert(0, stringToBeSterned)
+
+                        case "Conc":
+                            str1 = self.stack.pop(0)
+                            str2 = self.stack.pop(0)
+
+                            str1.data += str2.data
+                            self.stack.insert(0, str1)
+
+                        case "Order":
+                            tup: Tup = self.stack.pop(0)
+
+                            size = len(tup.symbols)
+                            self.stack.insert(0, Int(str(size)))
+
+                        case "Null":
+                            tup: Tup = self.stack.pop(0)
+                            result = True
+
+                            if tup.symbols:
+                                result = False
+
+                            self.stack.insert(0, Bool(str(result)))
+
+                        case "Isinteger":
+                            possibleInteger = self.stack.pop(0)
+
+                            if isinstance(possibleInteger, Int):
+                                self.stack.insert(0, Bool("True"))
+                            else:
+                                self.stack.insert(0, Bool("False"))
+
+                        case "Isstring":
+                            possibleString = self.stack.pop(0)
+
+                            if isinstance(possibleString, Str):
+                                self.stack.insert(0, Bool("True"))
+                            else:
+                                self.stack.insert(0, Bool("False"))
+
+                        case "Istuple":
+                            possibleTuple = self.stack.pop(0)
+
+                            if isinstance(possibleTuple, Tup):
+                                self.stack.insert(0, Bool("True"))
+                            else:
+                                self.stack.insert(0, Bool("False"))
+
+                        case "Isdummy":
+                            possibleDummy = self.stack.pop(0)
+
+                            if isinstance(possibleDummy, Dummy):
+                                self.stack.insert(0, Bool("True"))
+                            else:
+                                self.stack.insert(0, Bool("False"))
+
+                        case "Istruthvalue":
+                            possibleTruthvalue = self.stack.pop(0)
+
+                            if isinstance(possibleTruthvalue, Bool):
+                                self.stack.insert(0, Bool("True"))
+                            else:
+                                self.stack.insert(0, Bool("False"))
+
+                        case "Isfunction":
+                            possibleLambda = self.stack.pop(0)
+
+                            if isinstance(possibleLambda, Lambda):
+                                self.stack.insert(0, Bool("True"))
+                            else:
+                                self.stack.insert(0, Bool("False"))
 
             # CSE Rule 5
             elif isinstance(currentSymbol, E):
@@ -234,7 +317,7 @@ class CSEMachine:
                 # Traverse list of envs in reverse order to find the new current env
                 while y > 0:
                     if not self.env[y-1].isRemoved:
-                        currEnv = self.enc[y-1]
+                        currEnv = self.env[y-1]
                         break
                     y -= 1
 
@@ -275,14 +358,23 @@ class CSEMachine:
 
                 self.stack.insert(0, tup)
 
-            # DELTA
+            # Encountering delta (delta-then or delta-else)
+            elif isinstance(currentSymbol, Delta):
+                self.control.extend(currentSymbol.symbols)
+
+            elif isinstance(currentSymbol, B):
+                self.control.extend(currentSymbol.symbols)
+
+            # Int
+            else:
+                self.stack.insert(0, currentSymbol)
 
     def applyUOp(self, rator, rand):
         if rator.data == "neg":
             return Int(str(-1 * int(rand.data)))
 
         elif rator.data == "not":
-            return str(not bool(rand.data))
+            return Bool(str(not bool(rand.data)))
 
         else:
             return Err("Unknown unary operator encountered!")
@@ -329,7 +421,7 @@ class CSEMachine:
 
         elif rator.data == "aug":
             if not isinstance(rand1, Tup):
-                return Err("'aug' operator expects a tuple or nil")
+                return Err("'aug' operator expects either tuple or nil")
 
             if isinstance(rand2, Tup):
                 rand1.symbols.extend(rand2.symbols)
@@ -340,3 +432,26 @@ class CSEMachine:
 
         else:
             return Err("Unknown binary operator encountered!")
+
+    def getStringTuple(self, tup: Tup):
+        result = "("
+
+        for symbol in tup.symbols:
+            if isinstance(symbol, Tup):
+                result += self.getStringTuple(symbol) + ", "
+
+            else:
+                result += symbol.data + ", "
+
+        # Remove the ', ' from the last tuple element
+        result = result[0:len(result)-2] + ")"
+        return result
+
+    def getResult(self):
+        self.execute()
+        answer = self.stack[0]
+
+        if (isinstance(answer, Tup)):
+            return self.getStringTuple(answer)
+
+        return answer.data

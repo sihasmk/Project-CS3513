@@ -1,24 +1,3 @@
-from package.lexical_analyser.LexicalAnalyser import LexicalAnalyser
-from package.parser.Parser import Parser
-from package.engine.ASTAndASTFactory import ASTFactory
+from package.engine.Evaluator import Evaluator
 
-scanner = LexicalAnalyser("input_file.txt")
-tokens = scanner.scan()
-
-for token in tokens:
-    print(token)
-
-parser = Parser(tokens)
-AST = parser.parse()
-
-for node in AST:
-    print(node)
-
-stringAST = parser.AstToString()
-
-AST = ASTFactory.getAST(stringAST)
-
-AST.standardize()
-
-for string in stringAST:
-    print(string)
+Evaluator.evaluate("input_file.txt")

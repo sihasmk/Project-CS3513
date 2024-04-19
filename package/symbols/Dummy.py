@@ -1,4 +1,4 @@
-from Rand import Rand
+from package.symbols.Rand import Rand
 
 
 class Dummy(Rand):

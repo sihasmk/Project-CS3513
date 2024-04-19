@@ -1,6 +1,4 @@
-from Symbol import Symbol
-from E import E
-from Id import Id
+from package.symbols.Symbol import Symbol
 
 
 class E(Symbol):
@@ -13,11 +11,11 @@ class E(Symbol):
 
     # Function to find the value of something in the env or parent envs
     def lookup(self, id) -> Symbol:
-        for key in self.values.keys:
+        for key in self.values:
             if key.data == id.data:
-                return self.values.get(key)
+                return self.values[key]
 
-        if self.parent:
+        if self.parent is not None:
             return self.parent.lookup(id)
 
         else:

@@ -1,4 +1,4 @@
-from Rator import Rator
+from package.symbols.Rator import Rator
 
 
 class BOp(Rator):

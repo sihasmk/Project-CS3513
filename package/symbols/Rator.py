@@ -1,4 +1,4 @@
-from Symbol import Symbol
+from package.symbols.Symbol import Symbol
 
 
 class Rator(Symbol):
