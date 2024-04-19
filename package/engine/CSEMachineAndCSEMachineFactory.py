@@ -49,11 +49,12 @@ class CSEMachineFactory:
                     return Int(node.data[5:len(node.data)-1])
                 elif node.data.startswith("<STR:"):
                     return Str(node.data[6:len(node.data)-2])
-                elif node.data.startswith("<nil>"):
+                elif node.data.startswith("nil"):
                     return Tup()
-                elif node.data.startswith("<true>"):
+                # Since we're using Python, we need to capitalize the boolean or else it will cause problems
+                elif node.data.startswith("true"):
                     return Bool("True")
-                elif node.data.startswith("<false>"):
+                elif node.data.startswith("false"):
                     return Bool("False")
                 elif node.data.startswith("<dummy>"):
                     return Dummy()
@@ -133,11 +134,25 @@ class CSEMachine:
         self.stack = stack
         self.env = env
 
+    def printControl(self):
+        for ele in self.control:
+            print(ele.data, end=" ")
+
+    def printStack(self):
+        for ele in self.stack:
+            print(ele.data, end=" ")
+
     def execute(self):
         currEnv = self.env[0]
         j = 1
 
         while self.control:
+            # print("\nControl stack: ")
+            # self.printControl()
+
+            # print("\nData stack: ")
+            # self.printStack()
+
             # Pop the control
             currentSymbol = self.control.pop()
 
@@ -186,7 +201,7 @@ class CSEMachine:
                 # CSE Rule 10
                 elif isinstance(stackTop, Tup):
                     tup = stackTop
-                    index = int(self.stack.pop(0))
+                    index = int(self.stack.pop(0).data)
 
                     # "index - 1" because Python lists are zero-indexed but RPAL lists are 1-indexed
                     tupleValue = stackTop.symbols[index-1]
@@ -221,7 +236,12 @@ class CSEMachine:
                     match builtInFunction:
                         case "Print":
                             thingToBePrinted = self.stack.pop(0)
-                            print(thingToBePrinted.data)
+                            if not isinstance(thingToBePrinted, Tup):
+                                print(thingToBePrinted.data)
+                            else:
+                                print(self.getStringTuple(thingToBePrinted))
+
+                            self.stack.insert(0, thingToBePrinted)
 
                         case "Stem":
                             stringToBeStemmed = self.stack.pop(0)
@@ -341,10 +361,11 @@ class CSEMachine:
             # CSE Rule 8
             elif isinstance(currentSymbol, Beta):
                 boolOnStack = self.stack.pop(0)
+
                 del_else = self.control.pop()
                 del_then = self.control.pop()
 
-                if (bool(boolOnStack.data)):
+                if (eval(boolOnStack.data)):
                     self.control.append(del_then)
 
                 else:
@@ -374,7 +395,7 @@ class CSEMachine:
             return Int(str(-1 * int(rand.data)))
 
         elif rator.data == "not":
-            return Bool(str(not bool(rand.data)))
+            return Bool(str(not eval(rand.data)))
 
         else:
             return Err("Unknown unary operator encountered!")
@@ -396,10 +417,10 @@ class CSEMachine:
             return Int(str(int(rand1.data) ** int(rand2.data)))
 
         elif rator.data == "&":
-            return Bool(str(bool(rand1.data) and bool(rand2.data)))
+            return Bool(str(eval(rand1.data) and eval(rand2.data)))
 
         elif rator.data == "or":
-            return Bool(str(bool(rand1.data) or bool(rand2.data)))
+            return Bool(str(eval(rand1.data) or eval(rand2.data)))
 
         elif rator.data == "eq":
             return Bool(str(rand1.data == rand2.data))
@@ -441,7 +462,10 @@ class CSEMachine:
                 result += self.getStringTuple(symbol) + ", "
 
             else:
-                result += symbol.data + ", "
+                # We need to do the following because in RPAL, truthvalues are in lowercase, but in Python, the first
+                # letter is capitalized.
+                data = symbol.data.lower() if isinstance(symbol, Bool) else symbol.data
+                result += data + ", "
 
         # Remove the ', ' from the last tuple element
         result = result[0:len(result)-2] + ")"
@@ -449,9 +473,12 @@ class CSEMachine:
 
     def getResult(self):
         self.execute()
-        answer = self.stack[0]
+        answer = self.stack.pop(0)
 
         if (isinstance(answer, Tup)):
             return self.getStringTuple(answer)
 
-        return answer.data
+        # We need to do the following because in RPAL, truthvalues are in lowercase, but in Python, the first
+        # letter is capitalized.
+
+        return answer.data.lower() if isinstance(answer, Bool) else answer.data

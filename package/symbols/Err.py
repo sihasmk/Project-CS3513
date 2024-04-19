@@ -1,3 +1,4 @@
+import sys
 from package.symbols.Symbol import Symbol
 
 
@@ -7,3 +8,4 @@ class Err(Symbol):
             print("Error: ", end="")
             print(message)
         super().__init__("error")
+        sys.exit()

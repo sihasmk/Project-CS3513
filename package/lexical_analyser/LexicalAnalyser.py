@@ -1,5 +1,6 @@
 from pathlib import Path
 import re
+import sys
 from .Token import Token
 from .TokenType import TokenType
 
@@ -113,4 +114,4 @@ class LexicalAnalyser:
 
             print("Unable to tokenize the character: {} at index: {}".format(
                 currentChar, currentIndex))
-            break
+            sys.exit()

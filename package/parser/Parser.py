@@ -1,3 +1,4 @@
+import sys
 from ..lexical_analyser.Token import Token
 from ..lexical_analyser.TokenType import TokenType
 from .NodeType import NodeType
@@ -90,6 +91,7 @@ class Parser:
 
                 if (self.tokens[0].value != "in"):
                     print("Parse error at E : 'in' expected")
+                    sys.exit()
 
                 self.tokens.pop(0)
                 self.E()
@@ -107,6 +109,7 @@ class Parser:
 
                 if not self.tokens[0].value == ".":
                     print("Parse error at E : '.' expected")
+                    sys.exit()
 
                 self.tokens.pop(0)
                 self.E()
@@ -149,6 +152,7 @@ class Parser:
 
             if not self.tokens[0].value == "|":
                 print("Parse error at Tc: conditional '|' expected")
+                sys.exit()
 
             self.tokens.pop(0)
             self.Tc()
@@ -250,6 +254,7 @@ class Parser:
 
             if self.tokens[0].type != TokenType.IDENTIFIER:
                 print("Parsing error at Ap: IDENTIFIER expected")
+                sys.exit()
 
             self.AST.append(Node(NodeType.identifier, self.tokens[0].value, 0))
             self.tokens.pop(0)  # Remove IDENTIFIER
@@ -293,6 +298,8 @@ class Parser:
                         self.tokens.pop(0)
                     case _:
                         print("Parse error at Rn: Unexpected keyword")
+                        sys.exit()
+
             case TokenType.PUNCTUATION:
                 if self.tokens[0].value == "(":
                     self.tokens.pop(0)  # Remove the opening bracket
@@ -300,10 +307,12 @@ class Parser:
 
                     if (self.tokens[0].value != ")"):
                         print("Parsing error at Rn : Expected a matching ')'")
+                        sys.exit()
 
                     self.tokens.pop(0)  # Remove closing bracket
             case _:
                 print("Parsing error at Rn: Expected an Rn, but got something else")
+                sys.exit()
 
     def D(self):
         self.Da()
@@ -343,6 +352,7 @@ class Parser:
 
             if self.tokens[0].value != ")":
                 print("Parsing error at Db: Expected matching ')'")
+                sys.exit()
 
             self.tokens.pop(0)
 
@@ -365,6 +375,7 @@ class Parser:
 
                 if (self.tokens[0].value != "="):
                     print("Parsing error at Db : Expected an '='")
+                    sys.exit()
 
                 self.tokens.pop(0)
                 self.E()
@@ -384,6 +395,7 @@ class Parser:
                 self.Vl()
                 if (self.tokems[0] != "="):
                     print("Parsing error at Db : Expected an '='")
+                    sys.exit()
 
                 self.tokens.pop(0)
                 self.E()
@@ -401,6 +413,7 @@ class Parser:
 
             if self.tokens[0].value != ")":
                 print("Parse error at Vb : Unmatched '('")
+                sys.exit()
 
             self.tokens.pop(0)
 
@@ -422,6 +435,7 @@ class Parser:
 
             if (self.tokens[0].type != TokenType.IDENTIFIER):
                 print("Parse error at Vl : an ID was expected")
+                sys.exit()
 
             self.AST.append(Node(NodeType.identifier, self.tokens[0].value, 0))
             self.tokens.pop(0)
