@@ -1,3 +1,5 @@
+import copy
+from package.engine.NodeAndNodeFactory import NodeFactory
 from package.symbols.E import E
 from package.symbols.B import B
 from package.symbols.Beta import Beta
@@ -164,7 +166,7 @@ class CSEMachine:
             # CSE Rule 2
             elif isinstance(currentSymbol, Lambda):
                 lambda_ = currentSymbol
-                lambda_.enviroment = currEnv.index
+                lambda_.environment = currEnv.index
                 self.stack.insert(0, lambda_)
 
             elif isinstance(currentSymbol, Gamma):
@@ -189,7 +191,7 @@ class CSEMachine:
                             i += 1
 
                     for env in self.env:
-                        if env.index == lambda_.enviroment:
+                        if env.index == lambda_.environment:
                             e.parent = env
 
                     currEnv = e
@@ -244,21 +246,37 @@ class CSEMachine:
                             self.stack.insert(0, Dummy())
 
                         case "Stem":
-                            stringToBeStemmed = self.stack.pop(0)
-                            # Not sure what 'Stem' does. Need to implement.
+                            stringToBeStemmed: Str = copy.deepcopy(
+                                self.stack.pop(0))
+
+                            stringToBeStemmed.data = stringToBeStemmed.data[0]
+                            self.stack.insert(0, stringToBeStemmed)
 
                         case "Stern":
-                            stringToBeSterned: Str = self.stack.pop(0)
+                            stringToBeSterned: Str = copy.deepcopy(
+                                self.stack.pop(0))
 
                             stringToBeSterned.data = stringToBeSterned.data[1:]
                             self.stack.insert(0, stringToBeSterned)
 
                         case "Conc":
+                            # The correct way for Conc A B to happen is
+                            # Contol                        Stack            Env
+                            # gamma gamma Conc A B
+                            # gamma gamma                   Conc A B
+                            # gamma                         ConcA B
+                            #                               <result of A+B>
+
+                            # Therefore, we need to pop the second gamma from the control too
+                            self.control.pop()
+
                             str1 = self.stack.pop(0)
                             str2 = self.stack.pop(0)
 
-                            str1.data += str2.data
-                            self.stack.insert(0, str1)
+                            resultantString = copy.deepcopy(str1)
+
+                            resultantString.data += str2.data
+                            self.stack.insert(0, resultantString)
 
                         case "Order":
                             tup: Tup = self.stack.pop(0)

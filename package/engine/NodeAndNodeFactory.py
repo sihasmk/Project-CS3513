@@ -148,7 +148,7 @@ class Node:
                     N = self.children[1]
                     E2 = self.children[2]
 
-                    bottom_gamma = NodeFactory(
+                    bottom_gamma = NodeFactory.getNode(
                         "gamma", self.depth+1, self, [], True)
 
                     E1.depth += 1

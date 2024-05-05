@@ -12,7 +12,7 @@ class LexicalAnalyser:
 
     def scan(self):
         try:
-            p = Path(__file__).parent.parent / self.inputFileName
+            p = Path(__file__).parent.parent.parent / self.inputFileName
             input_file = open(p, 'r')
             count = 0
             while True:
