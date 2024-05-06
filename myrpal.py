@@ -13,17 +13,7 @@ if no_of_args == 2:
 
 else:
     if sys.argv[2] == "-ast":
-        scanner = LexicalAnalyser(filename)
-
-        tokens = scanner.scan()
-
-        parser = Parser(tokens)
-        AST = parser.parse()
-
-        stringAST = parser.AstToString()
-
-        for string in stringAST:
-            print(string)
+        Evaluator.evaluate(filename, True)
 
     else:
         print("Unknown flag:", sys.argv[2])

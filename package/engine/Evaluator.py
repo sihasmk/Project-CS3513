@@ -6,7 +6,7 @@ from package.engine.CSEMachineAndCSEMachineFactory import CSEMachineFactory, CSE
 
 class Evaluator:
     @staticmethod
-    def evaluate(filename):
+    def evaluate(filename, ast=False):
         scanner = LexicalAnalyser(filename)
 
         tokens = scanner.scan()
@@ -16,12 +16,16 @@ class Evaluator:
 
         stringAST = parser.AstToString()
 
-        ast = ASTFactory.getAST(stringAST)
+        if ast:
+            print(*stringAST, sep="\n")
 
-        ast.standardize()
+        else:
+            ast = ASTFactory.getAST(stringAST)
 
-        cseMachineFact = CSEMachineFactory()
+            ast.standardize()
 
-        cseMachine = cseMachineFact.getCSEMachine(ast)
+            cseMachineFact = CSEMachineFactory()
 
-        return cseMachine.getResult()
+            cseMachine = cseMachineFact.getCSEMachine(ast)
+
+            return cseMachine.getResult()
