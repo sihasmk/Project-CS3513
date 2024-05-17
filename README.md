@@ -7,10 +7,10 @@
 ## Steps
 
 1. Extract the contents of the zipped folder onto your machine.
-2. Either copy the input file containing the RPAL expression into the folder, or enter the program into the ”input file.txt” file. The file containing the RPAL program must be directly under the PROJECT-CS3513 folder.
+2. Either copy the input file containing the RPAL expression into the folder, or enter the program into the ”input file.txt” file. The file containing the RPAL program must be directly under the 210194H210745B folder.
 3. You can either run the python file directly from the command line, or you can use a make command.
    1. To use the terminal:
-      1. Open a terminal in the Project-CS3513 directory, and run the following command:
+      1. Open a terminal in the 210194H210745B directory, and run the following command:
          ```bash
          python ./myrpal.py <name of file containing RPAL expression>
          ```
@@ -20,7 +20,7 @@
          python ./myrpal.py <name of file containing RPAL expression> -ast
          ```
    2. To use the make command:
-      1. Open a terminal in the Project-CS3513 directory, and run the following command:
+      1. Open a terminal in the 210194H210745B directory, and run the following command:
          ```bash
          make run filename="<whatever_the_file_name_is>.txt"
          ```
