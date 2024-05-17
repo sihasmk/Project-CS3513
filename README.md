@@ -20,17 +20,17 @@
    command. Keep in mind that this will only print the AST for the program, and the program will not
    actually execute. The new terminal command will look like :
    `bash
-      python ./myrpal.py <name of file containing RPAL expression> -ast
-      `
+   python ./myrpal.py <name of file containing RPAL expression> -ast
+   `
    (b) To use the make command :
    i. Open a terminal in the Project-CS3513 directory, and run the following command :
    `bash
-      make run filename="<whatever_the_file_name_is>.txt"
-      `
+   make run filename="<whatever_the_file_name_is>.txt"
+   `
    This will run the RPAL program. If a Print is called in the RPAL program, the printed value will be
    displayed on the console.
    ii. If you want to print the AST (Abstract Syntax Tree), you need to use a different target: ast The new
    terminal command will look like :
    `bash
-      make ast filename="<whatever_the_file_name_is>.txt"
-      `
+   make ast filename="<whatever_the_file_name_is>.txt"
+   `
