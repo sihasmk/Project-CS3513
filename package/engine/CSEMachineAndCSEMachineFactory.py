@@ -1,5 +1,4 @@
 import copy
-from package.engine.NodeAndNodeFactory import NodeFactory
 from package.symbols.E import E
 from package.symbols.B import B
 from package.symbols.Beta import Beta
