@@ -67,6 +67,7 @@ class Parser:
                 self.stringAST.append(dots+node.value)
 
     def parse(self):
+        # To know when we have gotten the last token
         self.tokens.append(Token(TokenType.ENDOFTOKENS, ""))
         self.E()
 
@@ -417,10 +418,13 @@ class Parser:
 
             self.tokens.pop(0)
 
-            if not isVl:
+            if isVl:
                 self.AST.append(
                     Node(NodeType.identifier, self.tokens[0].value, 0))
                 self.tokens.pop(0)
+
+            else:
+                self.AST.append(Node(NodeType.empty_params, "()", 0))
 
         elif self.tokens[0].type == TokenType.IDENTIFIER:
             self.AST.append(Node(NodeType.identifier, self.tokens[0].value, 0))

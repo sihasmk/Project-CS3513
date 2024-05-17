@@ -9,7 +9,8 @@ class NodeType(Enum):
     string = auto()
     where = auto()
     gamma = auto()
-    lambda_ = auto()  # 'lambda' is a reserved keyword in Python, so we use a trailing underscore
+    # 'lambda' is a reserved keyword in Python, so we have used a trailing underscore
+    lambda_ = auto()
     tau = auto()
     rec = auto()
     aug = auto()
@@ -30,16 +31,11 @@ class NodeType(Enum):
     nil = auto()
     dummy = auto()
     within = auto()
-    and_ = auto()  # 'and' is a reserved keyword in Python, so we have used a trailing underscore
+    # 'and' is a reserved keyword in Python, so we have used a trailing underscore
+    and_ = auto()
     equal = auto()
     comma = auto()
     empty_params = auto()
-    # y_star = auto()
-    # lambda_expression = auto()
-    # beta_operator = auto()
-    # env_operator = auto()
-    # tuple = auto()
-    # eta_expression = auto()
 
     def __str__(self) -> str:
         return super().__str__()
